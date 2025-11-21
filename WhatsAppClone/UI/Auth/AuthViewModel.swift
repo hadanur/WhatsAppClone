@@ -9,19 +9,20 @@ import Foundation
 import Firebase
 import FirebaseFirestore
 import FirebaseAuth
-import Combine
+import Observation
 
-final class AuthViewModel: ObservableObject {
+@Observable
+final class AuthViewModel {
     private var router: AppRouter
 
-    @Published var email = ""
-    @Published var password = ""
+    var email = ""
+    var password = ""
     
-    @Published var userSession: FirebaseAuth.User?
-    @Published var isLoading = false
-    @Published var errorMessage: String?
+    var userSession: FirebaseAuth.User?
+    var isLoading = false
+    var errorMessage: String?
     
-    private var auth = Auth.auth()
+    private let auth = Auth.auth()
     
     init(router: AppRouter) {
         self.router = router
@@ -41,7 +42,6 @@ final class AuthViewModel: ObservableObject {
             let result = try await auth.signIn(withEmail: email, password: password)
             self.userSession = result.user
 
-            router.goToMain()
         } catch {
             print("DEBUG: Giriş Hatası: \(error.localizedDescription)")
             self.errorMessage = "Giriş başarısız: \(error.localizedDescription)"
@@ -51,6 +51,6 @@ final class AuthViewModel: ObservableObject {
     }
     
     func goToRegister() {
-        router.goToRegister()
+        router.push(.register)
     }
 }

@@ -11,15 +11,19 @@ import FirebaseCore
 @main
 struct WhatsAppCloneApp: App {
 
-    @StateObject var router = AppRouter()
+    @State private var authManager: AuthManager
+    @State private var router: AppRouter
 
     init() {
         FirebaseApp.configure()
+        
+        _authManager = State(initialValue: AuthManager())
+        _router = State(initialValue: AppRouter())
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView(router: router)
+            RootView(authManager: authManager, router: router)
         }
     }
 }

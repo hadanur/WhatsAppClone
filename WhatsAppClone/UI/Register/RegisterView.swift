@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct RegisterView: View {
-    @EnvironmentObject var viewModel: RegisterViewModel
-    
-    @Environment(\.dismiss) var dismiss
+    @Environment(RegisterViewModel.self) var viewModel
         
     var body: some View {
+        @Bindable var viewModel = viewModel
+        
         VStack {
             
             Image(systemName: "person.fill.badge.plus")

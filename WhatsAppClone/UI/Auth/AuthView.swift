@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct AuthView: View {
-    @EnvironmentObject var viewModel: AuthViewModel
-
+    @Environment(AuthViewModel.self) var viewModel
+    
     var body: some View {
-        
+        @Bindable var viewModel = viewModel
+
         NavigationView {
             VStack {
                 

@@ -9,20 +9,21 @@ import Foundation
 import Firebase
 import FirebaseFirestore
 import FirebaseAuth
-import Combine
+import Observation
 
-final class RegisterViewModel: ObservableObject {
+@Observable
+final class RegisterViewModel {
     private var router: AppRouter
 
-    @Published var email = ""
-    @Published var password = ""
-    @Published var username = ""
+    var email = ""
+    var password = ""
+    var username = ""
     
-    @Published var userSession: FirebaseAuth.User?
-    @Published var isLoading = false
-    @Published var errorMessage: String?
+    var userSession: FirebaseAuth.User?
+    var isLoading = false
+    var errorMessage: String?
     
-    private var auth = Auth.auth()
+    private let auth = Auth.auth()
     
     init(router: AppRouter) {
         self.router = router
@@ -59,7 +60,7 @@ final class RegisterViewModel: ObservableObject {
     }
     
     func goToAuth() {
-        router.goToAuth()
+        router.push(.auth)
     }
         
     // MARK: - Firestore Yardımcı Fonksiyonu

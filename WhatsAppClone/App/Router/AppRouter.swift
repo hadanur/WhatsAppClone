@@ -6,40 +6,23 @@
 //
 
 import SwiftUI
-import FirebaseAuth
-import Combine
+import Observation
 
-final class AppRouter: ObservableObject {
+@Observable
+final class AppRouter {
     
-    @Published var screen: AppScreen = .loading
+    var path: [AppRoute] = []
     
-    private var listener: AuthStateDidChangeListenerHandle?
-    
-    init() {
-        observeAuth()
+    func push(_ route: AppRoute) {
+        path.append(route)
     }
     
-    private func observeAuth() {
-        listener = Auth.auth().addStateDidChangeListener { _, user in
-            withAnimation {
-                if user == nil {
-                    self.screen = .auth
-                } else {
-                    self.screen = .auth
-                }
-            }
-        }
+    func pop() {
+        guard !path.isEmpty else { return }
+        path.removeLast()
     }
     
-    func goToRegister() {
-        screen = .register
-    }
-    
-    func goToAuth() {
-        screen = .auth
-    }
-    
-    func goToMain() {
-        screen = .main
+    func popToRoot() {
+        path.removeAll()
     }
 }
