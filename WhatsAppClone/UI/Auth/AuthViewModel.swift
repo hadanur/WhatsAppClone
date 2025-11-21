@@ -15,7 +15,7 @@ import Observation
 final class AuthViewModel {
     private var router: AppRouter
 
-    var email = ""
+    var emailOrUsername = ""
     var password = ""
     
     var userSession: FirebaseAuth.User?
@@ -29,28 +29,57 @@ final class AuthViewModel {
         self.userSession = auth.currentUser
     }
     
+
     func signIn() async {
-        guard !email.isEmpty, !password.isEmpty else {
-            self.errorMessage = "Lütfen e-posta ve şifrenizi girin."
+        if isLoading { return }
+
+        guard !emailOrUsername.isEmpty, !password.isEmpty else {
+            self.errorMessage = "Lütfen kullanıcı bilgilerinizi girin."
             return
         }
 
         self.isLoading = true
         self.errorMessage = nil
-
-        do {
-            let result = try await auth.signIn(withEmail: email, password: password)
-            self.userSession = result.user
-
-        } catch {
-            print("DEBUG: Giriş Hatası: \(error.localizedDescription)")
-            self.errorMessage = "Giriş başarısız: \(error.localizedDescription)"
+        
+        defer {
+            self.isLoading = false
         }
 
-        self.isLoading = false
+        do {
+            let finalEmail = try await resolveEmail(from: emailOrUsername)
+            let result = try await auth.signIn(withEmail: finalEmail, password: password)
+            self.userSession = result.user
+            
+        } catch {
+            print("DEBUG: Giriş Hatası: \(error.localizedDescription)")
+            self.errorMessage = "Giriş başarısız: Kullanıcı adı/şifre yanlış veya internet yok."
+        }
     }
     
     func goToRegister() {
         router.push(.register)
+    }
+    
+    // MARK: - Yardımcı Fonksiyon (Username -> Email Çevirici)
+    
+    private func resolveEmail(from input: String) async throws -> String {
+        // A. Eğer input "@" içeriyorsa zaten email'dir, olduğu gibi döndür.
+        if input.contains("@") {
+            return input
+        }
+        
+        // B. "@" içermiyorsa Username'dir. Firestore'dan bu username'e ait emaili bul.
+        let snapshot = try await Firestore.firestore().collection("users")
+            .whereField("username", isEqualTo: input) // Username'e göre filtrele
+            .getDocuments()
+        
+        // Eğer doküman bulunduysa email'i al
+        if let document = snapshot.documents.first,
+           let email = document.data()["email"] as? String {
+            return email
+        } else {
+            // Username veritabanında yoksa hata fırlat
+            throw NSError(domain: "Auth", code: 404, userInfo: [NSLocalizedDescriptionKey: "Bu kullanıcı adı bulunamadı."])
+        }
     }
 }

@@ -19,7 +19,6 @@ final class RegisterViewModel {
     var password = ""
     var username = ""
     
-    var userSession: FirebaseAuth.User?
     var isLoading = false
     var errorMessage: String?
     
@@ -34,6 +33,7 @@ final class RegisterViewModel {
             self.errorMessage = "Lütfen tüm alanları doldurun."
             return
         }
+        
         guard password.count >= 6 else {
             self.errorMessage = "Şifreniz en az 6 karakter olmalıdır."
             return
@@ -43,36 +43,46 @@ final class RegisterViewModel {
         self.errorMessage = nil
 
         do {
+            try await checkUsernameUnique(username: username)
+            
             let result = try await auth.createUser(withEmail: email, password: password)
             let user = result.user
 
             try await saveUserToFirestore(user: user, email: email, username: username)
-
-            self.userSession = user
-            self.isLoading = false
             
-            goToAuth()
         } catch {
             print("DEBUG: Kayıt Hatası: \(error.localizedDescription)")
-            self.errorMessage = "Kayıt başarısız: \(error.localizedDescription)"
-            self.isLoading = false
+            self.errorMessage = error.localizedDescription
         }
+        
+        self.isLoading = false
     }
     
-    func goToAuth() {
-        router.push(.auth)
+    func goBackToLogin() {
+        router.pop()
     }
         
-    // MARK: - Firestore Yardımcı Fonksiyonu
+    // MARK: - Firestore Yardımcı Fonksiyonları
+    
     private func saveUserToFirestore(user: FirebaseAuth.User, email: String, username: String) async throws {
-        let db = Firestore.firestore()
         let userData: [String: Any] = [
             "uid": user.uid,
             "email": email,
             "username": username,
             "profileImageUrl": "",
+            "dateCreated": Timestamp()
         ]
         
-        try await db.collection("users").document(user.uid).setData(userData)
+        try await Firestore.firestore().collection("users").document(user.uid).setData(userData)
+    }
+    
+    private func checkUsernameUnique(username: String) async throws {
+        let snapshot = try await Firestore.firestore().collection("users")
+            .whereField("username", isEqualTo: username)
+            .getDocuments()
+        
+        if !snapshot.isEmpty {
+            throw NSError(domain: "Register", code: 409, userInfo: [NSLocalizedDescriptionKey: "Bu kullanıcı adı zaten kullanımda. Lütfen başka bir tane seçin."])
+        }
     }
 }

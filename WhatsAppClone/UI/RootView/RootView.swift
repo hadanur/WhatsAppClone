@@ -25,40 +25,44 @@ struct RootView: View {
     var body: some View {
         @Bindable var router = router
         
-        switch authManager.status {
-            
-        case .loading:
-            ProgressView()
-            
-        case .unauthenticated:
-            NavigationStack(path: $router.path) {
-                AuthView()
-                    .navigationDestination(for: AppRoute.self) { route in
-                        switch route {
-                        case .register:
-                            RegisterView()
-                                .environment(registerVM)
-                                .environment(router)
-                        
-                        default:
-                            EmptyView()
+        ZStack {
+            switch authManager.status {
+                
+            case .loading:
+                ProgressView()
+                
+            case .unauthenticated:
+                NavigationStack(path: $router.path) {
+                    AuthView()
+                        .navigationDestination(for: AppRoute.self) { route in
+                            switch route {
+                            case .register:
+                                RegisterView()
+                                    .environment(registerVM)
+                                    .environment(router)
+                            default:
+                                EmptyView()
+                            }
                         }
-                    }
-            }
-            .environment(authVM)
-            .environment(router)
-            
-        case .authenticated:
-            NavigationStack(path: $router.path) {
-                ChatsView()
-                    .navigationDestination(for: AppRoute.self) { route in
-                        switch route {
-                        default:
-                            EmptyView()
+                }
+                .environment(authVM)
+                .environment(router)
+                
+            case .authenticated:
+                NavigationStack(path: $router.path) {
+                    ChatsView()
+                        .navigationDestination(for: AppRoute.self) { route in
+                            switch route {
+                            default:
+                                EmptyView()
+                            }
                         }
-                    }
+                }
+                .environment(router)
             }
-            .environment(router)
+        }
+        .onChange(of: authManager.status) { _, _ in
+            router.path = []
         }
     }
 }

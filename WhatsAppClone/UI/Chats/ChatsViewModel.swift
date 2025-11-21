@@ -16,12 +16,16 @@ final class ChatsViewModel {
     var isLoading = false
     var errorMessage: String?
     
-    func signOut() {
+
+    func signOut() async {
+        self.isLoading = true
+        
         do {
             try Auth.auth().signOut()
         } catch {
             print("DEBUG: Çıkış hatası: \(error.localizedDescription)")
             self.errorMessage = error.localizedDescription
+            self.isLoading = false
         }
     }
 }
