@@ -13,7 +13,6 @@ import Observation
 
 @Observable
 final class RegisterViewModel {
-    private var router: AppRouter
 
     var email = ""
     var password = ""
@@ -24,16 +23,12 @@ final class RegisterViewModel {
     
     private let auth = Auth.auth()
     
-    init(router: AppRouter) {
-        self.router = router
-    }
-    
-    func signUp() async {
+    func signUp() {
         guard !email.isEmpty, !password.isEmpty, !username.isEmpty else {
             self.errorMessage = "Lütfen tüm alanları doldurun."
             return
         }
-        
+
         guard password.count >= 6 else {
             self.errorMessage = "Şifreniz en az 6 karakter olmalıdır."
             return
@@ -42,24 +37,22 @@ final class RegisterViewModel {
         self.isLoading = true
         self.errorMessage = nil
 
-        do {
-            try await checkUsernameUnique(username: username)
+        Task {
+            defer { self.isLoading = false }
             
-            let result = try await auth.createUser(withEmail: email, password: password)
-            let user = result.user
+            do {
+                try await checkUsernameUnique(username: username)
+                
+                let result = try await auth.createUser(withEmail: email, password: password)
+                let user = result.user
 
-            try await saveUserToFirestore(user: user, email: email, username: username)
-            
-        } catch {
-            print("DEBUG: Kayıt Hatası: \(error.localizedDescription)")
-            self.errorMessage = error.localizedDescription
+                try await saveUserToFirestore(user: user, email: email, username: username)
+                
+            } catch {
+                print("DEBUG: Kayıt Hatası: \(error.localizedDescription)")
+                self.errorMessage = error.localizedDescription
+            }
         }
-        
-        self.isLoading = false
-    }
-    
-    func goBackToLogin() {
-        router.pop()
     }
         
     // MARK: - Firestore Yardımcı Fonksiyonları

@@ -8,7 +8,14 @@
 import SwiftUI
 
 struct AuthView: View {
-    @Environment(AuthViewModel.self) var viewModel
+    @State private var viewModel: AuthViewModel
+    
+    private var router: AppRouter
+    
+    init(router: AppRouter) {
+        self.router = router
+        _viewModel = State(initialValue: AuthViewModel())
+    }
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -52,7 +59,7 @@ struct AuthView: View {
                 }
                 
                 Button {
-                    Task { await viewModel.signIn() }
+                    viewModel.signIn()
                 } label: {
                     Text("Giriş Yap")
                         .font(.headline)
@@ -73,7 +80,7 @@ struct AuthView: View {
                     Text("Hesabın yok mu?")
                     
                     Button {
-                        viewModel.goToRegister()
+                        router.push(.register)
                     } label: {
                         Text("Kayıt Ol")
                             .fontWeight(.bold)
@@ -84,6 +91,7 @@ struct AuthView: View {
             }
             .blur(radius: viewModel.isLoading ? 3 : 0)
             .disabled(viewModel.isLoading)
+            .navigationBarHidden(true)
             
             if viewModel.isLoading {
                 Color.black.opacity(0.4)
@@ -108,10 +116,9 @@ struct AuthView: View {
                 .shadow(radius: 10)
             }
         }
-        .navigationBarHidden(true)
     }
 }
 
 #Preview {
-    AuthView()
+    AuthView(router: AppRouter())
 }

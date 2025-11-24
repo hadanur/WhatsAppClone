@@ -13,7 +13,6 @@ import Observation
 
 @Observable
 final class AuthViewModel {
-    private var router: AppRouter
 
     var emailOrUsername = ""
     var password = ""
@@ -24,13 +23,12 @@ final class AuthViewModel {
     
     private let auth = Auth.auth()
     
-    init(router: AppRouter) {
-        self.router = router
+    init() {
         self.userSession = auth.currentUser
     }
     
 
-    func signIn() async {
+    func signIn() {
         if isLoading { return }
 
         guard !emailOrUsername.isEmpty, !password.isEmpty else {
@@ -41,23 +39,21 @@ final class AuthViewModel {
         self.isLoading = true
         self.errorMessage = nil
         
-        defer {
-            self.isLoading = false
-        }
+        Task {
+            defer {
+                self.isLoading = false
+            }
 
-        do {
-            let finalEmail = try await resolveEmail(from: emailOrUsername)
-            let result = try await auth.signIn(withEmail: finalEmail, password: password)
-            self.userSession = result.user
-            
-        } catch {
-            print("DEBUG: Giriş Hatası: \(error.localizedDescription)")
-            self.errorMessage = "Giriş başarısız: Kullanıcı adı/şifre yanlış veya internet yok."
+            do {
+                let finalEmail = try await resolveEmail(from: emailOrUsername)
+                let result = try await auth.signIn(withEmail: finalEmail, password: password)
+                self.userSession = result.user
+                
+            } catch {
+                print("DEBUG: Giriş Hatası: \(error.localizedDescription)")
+                self.errorMessage = "Giriş başarısız: Kullanıcı adı/şifre yanlış veya internet yok."
+            }
         }
-    }
-    
-    func goToRegister() {
-        router.push(.register)
     }
     
     // MARK: - Yardımcı Fonksiyon (Username -> Email Çevirici)

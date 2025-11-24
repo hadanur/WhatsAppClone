@@ -4,10 +4,18 @@
 //
 //  Created by Hakan Adanur on 20/11/2025.
 //
+
 import SwiftUI
 
 struct RegisterView: View {
-    @Environment(RegisterViewModel.self) var viewModel
+    @State private var viewModel: RegisterViewModel
+    
+    private var router: AppRouter
+    
+    init(router: AppRouter) {
+        self.router = router
+        _viewModel = State(initialValue: RegisterViewModel())
+    }
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -57,7 +65,7 @@ struct RegisterView: View {
                 }
                 
                 Button {
-                    Task { await viewModel.signUp() }
+                    viewModel.signUp()
                 } label: {
                     Text("Kayıt Ol")
                         .font(.headline)
@@ -69,6 +77,8 @@ struct RegisterView: View {
                         .padding(.top, 25)
                 }
                 .padding(.horizontal)
+                .disabled(viewModel.isLoading)
+                .opacity(viewModel.isLoading ? 0.7 : 1.0)
                 
                 Spacer()
                 
@@ -78,7 +88,7 @@ struct RegisterView: View {
                     Text("Zaten hesabın var mı?")
                     
                     Button {
-                        viewModel.goBackToLogin()
+                        router.pop()
                     } label: {
                         Text("Giriş Yap")
                             .fontWeight(.bold)
@@ -94,7 +104,7 @@ struct RegisterView: View {
             if viewModel.isLoading {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
-
+                
                 VStack(spacing: 20) {
                     ProgressView()
                         .controlSize(.large)
