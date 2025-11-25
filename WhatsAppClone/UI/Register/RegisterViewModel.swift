@@ -9,7 +9,6 @@ import Foundation
 import Firebase
 import FirebaseFirestore
 import FirebaseAuth
-import Observation
 
 @Observable
 final class RegisterViewModel {

@@ -8,22 +8,37 @@
 import SwiftUI
 import FirebaseCore
 
-@main
-struct WhatsAppCloneApp: App {
+class AppDelegate: NSObject, UIApplicationDelegate {
 
-    @State private var authManager: AuthManager
-    @State private var router: AppRouter
+    var authManager: AuthManager?
+    var router: AppRouter?
 
-    init() {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        
         FirebaseApp.configure()
         
-        _authManager = State(initialValue: AuthManager())
-        _router = State(initialValue: AppRouter())
+        self.authManager = AuthManager()
+        self.router = AppRouter()
+        
+        return true
     }
+}
+
+@main
+struct WhatsAppCloneApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
         WindowGroup {
-            RootView(authManager: authManager, router: router)
+            if let authManager = delegate.authManager,
+               let router = delegate.router {
+                
+                RootView(authManager: authManager, router: router)
+                
+            } else {
+                ProgressView()
+            }
         }
     }
 }

@@ -7,12 +7,12 @@
 
 import Foundation
 import FirebaseAuth
-import Observation
 
 @Observable
 final class AuthManager {
     
-    var status: AppStatus = .loading
+    var userSession: FirebaseAuth.User?
+    var isLoading = true
     
     private var listener: AuthStateDidChangeListenerHandle?
     
@@ -22,14 +22,13 @@ final class AuthManager {
     
     private func setupListener() {
         listener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            guard let self = self else { return }
-            
-            if user != nil {
-                self.status = .authenticated
-            } else {
-                self.status = .unauthenticated
-            }
+            self?.userSession = user
+            self?.isLoading = false
         }
+    }
+    
+    func signOut() {
+        try? Auth.auth().signOut()
     }
     
     deinit {

@@ -8,9 +8,14 @@
 import SwiftUI
 
 struct ChatsView: View {
-    @State private var viewModel = ChatsViewModel()
-    @Environment(AppRouter.self) var router
-
+    @State private var viewModel: ChatsViewModel
+    private var router: AppRouter
+    
+    init(router: AppRouter) {
+        self.router = router
+        _viewModel = State(initialValue: ChatsViewModel())
+    }
+    
     var body: some View {
         @Bindable var viewModel = viewModel
         

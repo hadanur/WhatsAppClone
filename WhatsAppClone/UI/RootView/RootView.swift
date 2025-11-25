@@ -21,13 +21,11 @@ struct RootView: View {
         @Bindable var router = router
         
         ZStack {
-            switch authManager.status {
-                
-            case .loading:
+            if authManager.isLoading {
                 ProgressView()
                     .controlSize(.large)
                 
-            case .unauthenticated:
+            } else if authManager.userSession == nil {
                 NavigationStack(path: $router.path) {
                     AuthView(router: router)
                         .navigationDestination(for: AppRoute.self) { route in
@@ -39,11 +37,10 @@ struct RootView: View {
                             }
                         }
                 }
-                .environment(router)
                 
-            case .authenticated:
+            } else {
                 NavigationStack(path: $router.path) {
-                    ChatsView()
+                    ChatsView(router: router)
                         .navigationDestination(for: AppRoute.self) { route in
                             switch route {
                             default:
@@ -51,10 +48,9 @@ struct RootView: View {
                             }
                         }
                 }
-                .environment(router)
             }
         }
-        .onChange(of: authManager.status) { _, _ in
+        .onChange(of: authManager.userSession) { _, _ in
             router.path = []
         }
     }

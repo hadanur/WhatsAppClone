@@ -28,6 +28,7 @@ final class AuthViewModel {
     }
     
 
+    @MainActor
     func signIn() {
         if isLoading { return }
 

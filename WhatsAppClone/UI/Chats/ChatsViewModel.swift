@@ -8,7 +8,6 @@
 
 import Foundation
 import FirebaseAuth
-import Observation
 
 @Observable
 final class ChatsViewModel {

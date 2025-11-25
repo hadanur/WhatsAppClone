@@ -6,9 +6,6 @@
 //
 
 import SwiftUI
-import Observation
-import FirebaseAuth
-
 
 enum AppStatus {
     case loading
