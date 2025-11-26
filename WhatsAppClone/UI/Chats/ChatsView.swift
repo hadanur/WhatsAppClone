@@ -8,17 +8,11 @@
 import SwiftUI
 
 struct ChatsView: View {
-    @State private var viewModel: ChatsViewModel
-    private var router: AppRouter
+    @Bindable var viewModel: ChatsViewModel
     
-    init(router: AppRouter) {
-        self.router = router
-        _viewModel = State(initialValue: ChatsViewModel())
-    }
-    
-    var body: some View {
-        @Bindable var viewModel = viewModel
+    @Environment(AppRouter.self) private var router
         
+    var body: some View {
         ZStack {
             VStack {
                 Image(systemName: "message.fill")
@@ -51,7 +45,6 @@ struct ChatsView: View {
             .blur(radius: viewModel.isLoading ? 3 : 0)
             .disabled(viewModel.isLoading)
             
-            
             if viewModel.isLoading {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
@@ -75,5 +68,12 @@ struct ChatsView: View {
                 .shadow(radius: 10)
             }
         }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        ChatsView(viewModel: ChatsViewModel())
+            .environment(AppRouter())
     }
 }

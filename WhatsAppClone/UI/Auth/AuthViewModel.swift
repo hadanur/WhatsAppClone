@@ -7,8 +7,8 @@
 
 import Foundation
 import Firebase
-import FirebaseFirestore
 import FirebaseAuth
+import FirebaseFirestore
 import Observation
 
 @Observable
@@ -17,16 +17,8 @@ final class AuthViewModel {
     var emailOrUsername = ""
     var password = ""
     
-    var userSession: FirebaseAuth.User?
     var isLoading = false
     var errorMessage: String?
-    
-    private let auth = Auth.auth()
-    
-    init() {
-        self.userSession = auth.currentUser
-    }
-    
 
     @MainActor
     func signIn() {
@@ -46,13 +38,13 @@ final class AuthViewModel {
             }
 
             do {
-                let finalEmail = try await resolveEmail(from: emailOrUsername)
-                let result = try await auth.signIn(withEmail: finalEmail, password: password)
-                self.userSession = result.user
+                let email = try await resolveEmail(from: emailOrUsername)
                 
+                try await Auth.auth().signIn(withEmail: email, password: password)
+                                
             } catch {
                 print("DEBUG: Giriş Hatası: \(error.localizedDescription)")
-                self.errorMessage = "Giriş başarısız: Kullanıcı adı/şifre yanlış veya internet yok."
+                self.errorMessage = "Giriş başarısız: Bilgilerinizi kontrol edin."
             }
         }
     }
@@ -64,10 +56,11 @@ final class AuthViewModel {
         if input.contains("@") {
             return input
         }
+                
+        let collection = Firestore.firestore().collection("users")
         
-        // B. "@" içermiyorsa Username'dir. Firestore'dan bu username'e ait emaili bul.
-        let snapshot = try await Firestore.firestore().collection("users")
-            .whereField("username", isEqualTo: input) // Username'e göre filtrele
+        let snapshot = try await collection
+            .whereField("username", isEqualTo: input)
             .getDocuments()
         
         // Eğer doküman bulunduysa email'i al

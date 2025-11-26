@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum AppStatus {
-    case loading
+    case undefined
     case unauthenticated
     case authenticated
 }

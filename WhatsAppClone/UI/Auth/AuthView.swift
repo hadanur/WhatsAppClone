@@ -8,17 +8,11 @@
 import SwiftUI
 
 struct AuthView: View {
-    @State private var viewModel: AuthViewModel
+    @Bindable var viewModel: AuthViewModel
     
-    private var router: AppRouter
-    
-    init(router: AppRouter) {
-        self.router = router
-        _viewModel = State(initialValue: AuthViewModel())
-    }
+    @Environment(AppRouter.self) private var router
     
     var body: some View {
-        @Bindable var viewModel = viewModel
 
         ZStack {
             VStack {
@@ -120,5 +114,6 @@ struct AuthView: View {
 }
 
 #Preview {
-    AuthView(router: AppRouter())
+    AuthView(viewModel: AuthViewModel())
+        .environment(AppRouter())
 }

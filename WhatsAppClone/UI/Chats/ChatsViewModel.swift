@@ -16,15 +16,14 @@ final class ChatsViewModel {
     var errorMessage: String?
     
 
-    func signOut() async {
+    @MainActor
+    func signOut() {
         self.isLoading = true
         
-        do {
-            try Auth.auth().signOut()
-        } catch {
-            print("DEBUG: Çıkış hatası: \(error.localizedDescription)")
-            self.errorMessage = error.localizedDescription
+        defer {
             self.isLoading = false
         }
+        
+        AuthManager.shared.signOut()
     }
 }

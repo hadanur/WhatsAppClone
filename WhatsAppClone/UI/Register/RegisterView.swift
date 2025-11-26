@@ -8,17 +8,11 @@
 import SwiftUI
 
 struct RegisterView: View {
-    @State private var viewModel: RegisterViewModel
+    @Bindable var viewModel: RegisterViewModel
     
-    private var router: AppRouter
-    
-    init(router: AppRouter) {
-        self.router = router
-        _viewModel = State(initialValue: RegisterViewModel())
-    }
+    @Environment(AppRouter.self) private var router
     
     var body: some View {
-        @Bindable var viewModel = viewModel
         
         ZStack {
             VStack {
@@ -127,4 +121,9 @@ struct RegisterView: View {
         .navigationTitle("Kayıt Ol")
         .navigationBarTitleDisplayMode(.inline)
     }
+}
+
+#Preview {
+    RegisterView(viewModel: RegisterViewModel())
+        .environment(AppRouter())
 }

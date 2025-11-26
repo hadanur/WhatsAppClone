@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import Firebase
 import FirebaseFirestore
 import FirebaseAuth
+import Observation
 
 @Observable
 final class RegisterViewModel {
@@ -20,8 +20,9 @@ final class RegisterViewModel {
     var isLoading = false
     var errorMessage: String?
     
-    private let auth = Auth.auth()
+    private let collection = Firestore.firestore().collection("users")
     
+    @MainActor
     func signUp() {
         guard !email.isEmpty, !password.isEmpty, !username.isEmpty else {
             self.errorMessage = "Lütfen tüm alanları doldurun."
@@ -42,11 +43,11 @@ final class RegisterViewModel {
             do {
                 try await checkUsernameUnique(username: username)
                 
-                let result = try await auth.createUser(withEmail: email, password: password)
+                let result = try await Auth.auth().createUser(withEmail: email, password: password)
                 let user = result.user
 
                 try await saveUserToFirestore(user: user, email: email, username: username)
-                
+                                
             } catch {
                 print("DEBUG: Kayıt Hatası: \(error.localizedDescription)")
                 self.errorMessage = error.localizedDescription
@@ -64,12 +65,12 @@ final class RegisterViewModel {
             "profileImageUrl": "",
             "dateCreated": Timestamp()
         ]
-        
-        try await Firestore.firestore().collection("users").document(user.uid).setData(userData)
+                
+        try await collection.document(user.uid).setData(userData)
     }
     
     private func checkUsernameUnique(username: String) async throws {
-        let snapshot = try await Firestore.firestore().collection("users")
+        let snapshot = try await collection
             .whereField("username", isEqualTo: username)
             .getDocuments()
         

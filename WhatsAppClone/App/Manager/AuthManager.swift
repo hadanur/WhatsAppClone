@@ -11,19 +11,27 @@ import FirebaseAuth
 @Observable
 final class AuthManager {
     
+    static let shared = AuthManager()
+    
+    var appStatus: AppStatus = .undefined
+    
     var userSession: FirebaseAuth.User?
-    var isLoading = true
     
     private var listener: AuthStateDidChangeListenerHandle?
     
-    init() {
+    private init() {
         setupListener()
     }
     
     private func setupListener() {
         listener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             self?.userSession = user
-            self?.isLoading = false
+            
+            if user != nil {
+                self?.appStatus = .authenticated
+            } else {
+                self?.appStatus = .unauthenticated
+            }
         }
     }
     

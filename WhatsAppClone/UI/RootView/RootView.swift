@@ -8,50 +8,37 @@
 import SwiftUI
 
 struct RootView: View {
-    
-    @State var authManager: AuthManager
-    @State var router: AppRouter
-
-    init(authManager: AuthManager, router: AppRouter) {
-        self.authManager = authManager
-        self.router = router
-    }
+    @Bindable var router: AppRouter
 
     var body: some View {
-        @Bindable var router = router
         
-        ZStack {
-            if authManager.isLoading {
+        switch AuthManager.shared.appStatus {
+            
+        case .undefined:
+            ZStack {
+                Color.white.ignoresSafeArea()
                 ProgressView()
                     .controlSize(.large)
-                
-            } else if authManager.userSession == nil {
-                NavigationStack(path: $router.path) {
-                    AuthView(router: router)
-                        .navigationDestination(for: AppRoute.self) { route in
-                            switch route {
-                            case .register:
-                                RegisterView(router: router)
-                            default:
-                                EmptyView()
-                            }
-                        }
-                }
-                
-            } else {
-                NavigationStack(path: $router.path) {
-                    ChatsView(router: router)
-                        .navigationDestination(for: AppRoute.self) { route in
-                            switch route {
-                            default:
-                                EmptyView()
-                            }
-                        }
-                }
             }
-        }
-        .onChange(of: authManager.userSession) { _, _ in
-            router.path = []
+            
+        case .unauthenticated:
+            NavigationStack(path: $router.path) {
+                
+                AuthView(viewModel: AuthViewModel())
+                    .navigationDestination(for: AppRoute.self) { route in
+                        switch route {
+                        case .register:
+                            RegisterView(viewModel: RegisterViewModel())
+                        default:
+                            EmptyView()
+                        }
+                    }
+            }
+            
+        case .authenticated:
+            NavigationStack(path: $router.path) {
+                ChatsView(viewModel: ChatsViewModel())
+            }
         }
     }
 }
